@@ -1,0 +1,125 @@
+name: Promote Developpement to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      versionType:
+        type: choice
+        description: 'Version type to bump'
+        default: 'patch'
+        options:
+          - patch
+          - minor
+          - major
+        required: true
+
+jobs:
+  bump-version:
+    name: Bump Version
+    uses: ./.github/workflows/_bump_version.yml
+    with:
+      branch: developpement
+      versionType: ${{ github.event.inputs.versionType || 'patch' }}
+    secrets:
+      TOKEN: ${{ secrets.TOKEN }}
+
+  create-release:
+    name: Create Release
+    uses: ./.github/workflows/_create_release.yml
+    needs: bump-version
+    with:
+      branch: developpement
+      version: ${{ needs.bump-version.outputs.version }}
+    secrets:
+      TOKEN: ${{ secrets.TOKEN }}
+
+  disable-dev-protection:
+    name: Disable Branch Protection
+    uses: ./.github/workflows/_disable_protection.yml
+    needs: create-release
+    with:
+      branch: developpement
+    secrets:
+      TOKEN: ${{ secrets.TOKEN }}
+
+  disable-prod-protection:
+    name: Disable Release-Developpement Branch Protection
+    uses: ./.github/workflows/_disable_protection.yml
+    needs: create-release
+    with:
+      branch: production
+    secrets:
+      TOKEN: ${{ secrets.TOKEN }}
+
+  release-to-production:
+    name: Release to Production
+    runs-on: ubuntu-latest
+    needs: [disable-dev-protection, disable-prod-protection, create-release]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # important for git log
+          ref: ${{ needs.create-release.outputs.branch_name }} # checkout the release branch
+
+      - name: Configure Git
+        run: |
+          git config --global user.name github-actions[bot]
+          git config --global user.email "github-actions@github.com"
+          git config --global pull.ff only
+
+      - name: Delete Production Branch if it exists
+        run: |
+          git fetch origin --prune
+          if git show-ref --verify --quiet refs/heads/production; then
+            git push origin --delete production
+          fi
+
+      - name: Push Release to Production
+        run: |
+          git checkout -b production
+          git push origin production --force
+
+  update-developpement-version:
+    name: Update Developpement Version
+    runs-on: ubuntu-latest
+    needs: release-to-production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # important for git log
+          ref: production # checkout the developpement branch
+
+      - name: Configure Git
+        run: |
+          git config --global user.name github-actions[bot]
+          git config --global user.email "github-actions@github.com"
+          git config --global pull.ff only
+
+      - name: Merge Production to Developpement
+        run: |
+          git fetch origin --prune
+          git checkout developpement
+          git rebase production
+          git push origin developpement --force
+
+  enable-dev-protection:
+    name: Enable Branch Protection
+    uses: ./.github/workflows/_enable_protection.yml
+    needs: update-developpement-version
+    with:
+      branch: developpement
+      lock: false
+    secrets:
+      TOKEN: ${{ secrets.TOKEN }}
+
+  enable-prod-protection:
+    name: Enable Release-Developpement Branch Protection
+    uses: ./.github/workflows/_enable_protection.yml
+    needs: update-developpement-version
+    with:
+      branch: production
+      lock: true
+    secrets:
+      TOKEN: ${{ secrets.TOKEN }}

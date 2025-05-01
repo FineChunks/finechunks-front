@@ -11,6 +11,7 @@ on:
         type: string
         description: 'Branch to checkout'
         required: true
+
     outputs:
       version:
         description: 'Version number'
@@ -18,7 +19,7 @@ on:
 
 env:
   node-version: 22.x
-
+  TOKEN: ${{ secrets.TOKEN }}
 jobs:
   next_version:
     name: Get next version
@@ -57,7 +58,7 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.TOKEN }}
+          token: ${{ env.TOKEN }}
           commit-message: 'chore: bump version'
           title: 'chore: bump version'
           body: |
@@ -71,4 +72,4 @@ jobs:
         run: |
           gh pr merge ${{ steps.cpr.outputs.pull-request-number }} --squash --delete-branch --admin
         env:
-          GH_TOKEN: ${{ secrets.TOKEN }}
+          GH_TOKEN: ${{ env.TOKEN }}

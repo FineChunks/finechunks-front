@@ -65,7 +65,6 @@ jobs:
           GH_TOKEN: ${{ secrets.TOKEN }} # PAT or inherited token with repo/pull access
 
       - name: Auto-merge the PR
-        if: steps.cpr.outputs.pull-request-number != ''
         run: |
           pr_number=$(gh pr list --head version/bump-${{ github.run_id }} --json number -q '.[0].number')
           gh pr merge "$pr_number" --squash --delete-branch --admin

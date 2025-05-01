@@ -48,5 +48,5 @@ jobs:
           git config --global pull.ff only
           git checkout production
           git pull
-          git merge --no-ff release-${{ github.event.inputs.versionType }}-${{ steps.bump-version.outputs.version }}
+          git merge --no-ff release-${{ steps.bump-version.outputs.version }}
           git push origin production

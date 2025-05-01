@@ -48,7 +48,6 @@ jobs:
           branch: release-developpement-merge-${{ github.run_id }}
           delete-branch: true
           base: release-developpement # target branch
-          head: developpement # source branch
           commit-message: 'Merge developpement into release-developpement'
 
       - name: Auto-merge the PR

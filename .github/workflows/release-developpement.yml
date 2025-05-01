@@ -12,6 +12,9 @@ jobs:
     with:
       versionType: ${{ github.event.inputs.versionType || 'patch' }}
       branch: developpement # checkout the developpement branch
+    permissions:
+      contents: write # for pushing the version bump
+      pull-requests: write # for merging the version bump
 
   merge:
     runs-on: ubuntu-latest

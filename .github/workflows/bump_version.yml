@@ -31,28 +31,27 @@ jobs:
       version: ${{ steps.get_version.outputs.version }}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # important for git log
-          ref: ${{ inputs.branch }} # checkout the branch that triggered the workflow
+          fetch-depth: 0
+          ref: ${{ inputs.branch }}
 
-      - name: Get next version
+      - name: Setup Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
         id: get_version
         run: |
-          version=$(npm version --no-git-tag-version --force --tag-version-prefix='' --ignore-scripts patch)
-          echo "next_version=$version" >> "$GITHUB_OUTPUT"
-          echo "Version number will be $version"
+          version=$(npm version --no-git-tag-version --force --tag-version-prefix='' --ignore-scripts ${{ inputs.versionType }})
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      - name: push version
+      - name: Commit version bump
         run: |
-          git config --global user.name gitHub-actions
-          git config --global user.email "github-actions@github.com"
-
-          git checkout -b version/bump
           git add package.json package-lock.json
-          git commit -m "Bump version"
-          git push origin version/bump
+          git commit -m "chore: bump version"
 
       - name: Create Pull Request
         id: cpr
@@ -63,9 +62,9 @@ jobs:
           title: 'chore: bump version'
           body: |
             This PR was automatically created by GitHub Actions.
-          branch: version/bump
+          branch: version/bump-${{ github.run_id }}
           delete-branch: true
-          base: developpement
+          base: ${{ inputs.branch }}
 
       - name: Auto-merge the PR
         if: steps.cpr.outputs.pull-request-number != ''

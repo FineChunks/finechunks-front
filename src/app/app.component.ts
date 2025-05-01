@@ -15,7 +15,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.httpService.helloWorld().subscribe(data => {
-      console.log(data);
+      console.log('my hello world', data);
     });
   }
 }

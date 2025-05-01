@@ -48,17 +48,28 @@ jobs:
         run: |
           git config --global user.name gitHub-actions
           git config --global user.email "github-actions@github.com"
-          git config --global pull.ff only
 
-          git checkout -b bump-version-${{ steps.get_version.outputs.version }}
+          git checkout -b version/bump
           git add package.json package-lock.json
-          git commit -m "Bump version to ${{ steps.get_version.outputs.version }}"
-          git push origin bump-version-${{ steps.get_version.outputs.version }}
+          git commit -m "Bump version"
+          git push origin version/bump
 
-      - name: Merge to developpement
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.TOKEN }}
+          commit-message: 'chore: bump version'
+          title: 'chore: bump version'
+          body: |
+            This PR was automatically created by GitHub Actions.
+          branch: version/bump
+          delete-branch: true
+          base: developpement
+
+      - name: Auto-merge the PR
+        if: steps.cpr.outputs.pull-request-number != ''
         run: |
-          git checkout developpement
-          git pull
-          git merge -s recursive -X theirs bump-version-${{ steps.get_version.outputs.version }}
-          git push origin developpement
-          git push origin --delete bump-version-${{ steps.get_version.outputs.version }}
+          gh pr merge ${{ steps.cpr.outputs.pull-request-number }} --squash --delete-branch --admin
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN }}

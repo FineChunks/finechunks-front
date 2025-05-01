@@ -39,9 +39,21 @@ jobs:
           git config --global user.email "github-actions@github.com"
           git config --global pull.ff only
 
-      - name: Merge to release-developpement
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          title: 'Merge developpement into release-developpement'
+          body: 'This PR merges the developpement branch into release-developpement.'
+          branch: release-developpement-merge-${{ github.run_id }}
+          delete-branch: true
+          base: release-developpement # target branch
+          head: developpement # source branch
+          commit-message: 'Merge developpement into release-developpement'
+
+      - name: Auto-merge the PR
+        if: steps.cpr.outputs.pull-request-number != ''
         run: |
-          git checkout release-developpement
-          git pull
-          git merge -s recursive -X theirs developpement
-          git push origin release-developpement
+          gh pr merge ${{ steps.cpr.outputs.pull-request-number }} --squash --delete-branch --admin
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN }}

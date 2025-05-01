@@ -67,6 +67,23 @@ jobs:
       - name: Auto-merge the PR
         run: |
           pr_number=$(gh pr list --head version/bump-${{ github.run_id }} --json number -q '.[0].number')
-          gh pr merge "$pr_number" --squash --delete-branch --admin
+          gh pr merge "$pr_number" --rebase --delete-branch --admin
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN }}
+
+      - name: Create Pull Request with GitHub CLI
+        run: |
+          gh pr create \
+            --base developpement \
+            --head developpement-merge-${{ github.run_id }} \
+            --title "Merge release-developpement into developpement" \
+            --body "This PR merges the release-developpement branch into developpement." \
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN }} # PAT or inherited token with repo/pull access
+
+      - name: Auto-merge the PR
+        run: |
+          pr_number=$(gh pr list --head version/bump-${{ github.run_id }} --json number -q '.[0].number')
+          gh pr merge "$pr_number" --rebase --delete-branch --admin
         env:
           GH_TOKEN: ${{ secrets.TOKEN }}

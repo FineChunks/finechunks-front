@@ -59,5 +59,6 @@ jobs:
         run: |
           git checkout developpement
           git pull
-          git merge --no-ff bump-version-${{ steps.get_version.outputs.version }}
+          git merge -s recursive -X theirs bump-version-${{ steps.get_version.outputs.version }}
           git push origin developpement
+          git push origin --delete bump-version-${{ steps.get_version.outputs.version }}

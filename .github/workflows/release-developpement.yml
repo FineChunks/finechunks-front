@@ -54,20 +54,20 @@ jobs:
           git checkout -b release-developpement-merge-${{ github.run_id }}
           git push origin release-developpement-merge-${{ github.run_id }}
 
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v7
-        with:
-          commit-message: 'Merge developpement into release-developpement'
-          title: 'Merge developpement into release-developpement'
-          body: 'This PR merges the developpement branch into release-developpement.'
-          branch: release-developpement-merge-${{ github.run_id }}
-          delete-branch: true
-          base: release-developpement # target branch
+      - name: Create Pull Request with GitHub CLI
+        run: |
+          gh pr create \
+            --base release-developpement \
+            --head release-developpement-merge-${{ github.run_id }} \
+            --title "Merge developpement into release-developpement" \
+            --body "This PR merges the developpement branch into release-developpement." \
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN }} # PAT or inherited token with repo/pull access
 
       - name: Auto-merge the PR
         if: steps.cpr.outputs.pull-request-number != ''
         run: |
-          gh pr merge ${{ steps.cpr.outputs.pull-request-number }} --squash --delete-branch --admin
+          pr_number=$(gh pr list --head version/bump-${{ github.run_id }} --json number -q '.[0].number')
+          gh pr merge "$pr_number" --squash --delete-branch --admin
         env:
           GH_TOKEN: ${{ secrets.TOKEN }}

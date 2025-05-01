@@ -1,4 +1,4 @@
-name: promote-developpement-to-prod
+name: bump into a new version
 
 on:
   workflow_call:
@@ -18,12 +18,14 @@ on:
 
 env:
   node-version: 22.x
-  branch: developpement
 
 jobs:
   next_version:
     name: Get next version
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # for pushing the version bump
+      pull-requests: write # for merging the version bump
 
     outputs:
       version: ${{ steps.get_version.outputs.version }}
@@ -46,6 +48,16 @@ jobs:
         run: |
           git config --global user.name gitHub-actions
           git config --global user.email "github-actions@github.com"
+          git config --global pull.ff only
+
+          git checkout -b bump-version-${{ steps.get_version.outputs.version }}
           git add package.json package-lock.json
           git commit -m "Bump version to ${{ steps.get_version.outputs.version }}"
-          git push origin ${{ inputs.branch }}
+          git push origin bump-version-${{ steps.get_version.outputs.version }}
+
+      - name: Merge to developpement
+        run: |
+          git checkout developpement
+          git pull
+          git merge --no-ff bump-version-${{ steps.get_version.outputs.version }}
+          git push origin developpement

@@ -73,6 +73,7 @@ jobs:
 
       - name: Create Pull Request with GitHub CLI
         run: |
+          git checkout release-developpement
           gh pr create \
             --base developpement \
             --head developpement-merge-${{ github.run_id }} \

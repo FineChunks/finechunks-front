@@ -35,20 +35,24 @@ jobs:
 
       - name: Set up Git identity
         run: |
-          git config --global user.name gitHub-actions
+          git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions@github.com"
-          git config --global pull.ff only
+
+      - name: Checkout to new branch
+        run: |
+          git checkout -b release-developpement-merge-${{ github.run_id }}
+          git push origin release-developpement-merge-${{ github.run_id }}
 
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v7
         with:
+          commit-message: 'Merge developpement into release-developpement'
           title: 'Merge developpement into release-developpement'
           body: 'This PR merges the developpement branch into release-developpement.'
           branch: release-developpement-merge-${{ github.run_id }}
           delete-branch: true
           base: release-developpement # target branch
-          commit-message: 'Merge developpement into release-developpement'
 
       - name: Auto-merge the PR
         if: steps.cpr.outputs.pull-request-number != ''

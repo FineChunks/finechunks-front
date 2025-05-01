@@ -1,4 +1,4 @@
-name: bump into a new version
+name: bump version
 
 on:
   workflow_call:
@@ -10,6 +10,9 @@ on:
       branch:
         type: string
         description: 'Branch to checkout'
+        required: true
+    secrets:
+      TOKEN:
         required: true
 
     outputs:
@@ -71,4 +74,4 @@ jobs:
         run: |
           gh pr merge ${{ steps.cpr.outputs.pull-request-number }} --squash --delete-branch --admin
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.TOKEN }}

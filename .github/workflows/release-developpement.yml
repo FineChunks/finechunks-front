@@ -1,0 +1,40 @@
+name: Merge Develop to Release-Developpement
+
+on:
+  schedule:
+    - cron: '0 5 * * *' # Every day at 5am UTC (adjust if needed)
+
+  workflow_dispatch: # Allows manual triggering too
+
+jobs:
+  bump-version:
+    uses: ./.github/workflows/bump_version.yml
+    with:
+      versionType: ${{ github.event.inputs.versionType || 'patch' }}
+      branch: developpement # checkout the developpement branch
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: bump-version
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # important for git log
+          ref: developpement # checkout the developpement branch
+
+      - name: Set up Git identity
+        run: |
+          git config --global user.name gitHub-actions
+          git config --global user.email "github-actions@github.com"
+          git config --global pull.ff only
+
+      - name: delete release-developpement branch
+        run: |
+          git branch -D release-developpement || true # Ignore error if branch doesn't exist
+
+      - name: Create release-developpement branch
+        run: |
+          git checkout -b release-developpement
+          git push origin release-developpement

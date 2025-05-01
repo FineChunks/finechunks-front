@@ -1,0 +1,51 @@
+name: promote-developpement-to-prod
+
+on:
+  workflow_call:
+    inputs:
+      versionType:
+        type: string
+        description: 'Version type to bump'
+        required: true
+      branch:
+        type: string
+        description: 'Branch to checkout'
+        required: true
+    outputs:
+      version:
+        description: 'Version number'
+        value: ${{ jobs.next_version.outputs.version }}
+
+env:
+  node-version: 22.x
+  branch: developpement
+
+jobs:
+  next_version:
+    name: Get next version
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # important for git log
+          ref: ${{ inputs.branch }} # checkout the branch that triggered the workflow
+
+      - name: Get next version
+        id: get_version
+        run: |
+          version=$(npm version --no-git-tag-version --force --tag-version-prefix='' --ignore-scripts patch)
+          echo "next_version=$version" >> "$GITHUB_OUTPUT"
+          echo "Version number will be $version"
+
+      - name: push version
+        run: |
+          git config --global user.name gitHub-actions
+          git config --global user.email "github-actions@github.com"
+          git add package.json package-lock.json
+          git commit -m "Bump version to ${{ steps.get_version.outputs.version }}"
+          git push origin ${{ inputs.branch }}

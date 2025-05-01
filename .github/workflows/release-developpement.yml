@@ -17,7 +17,7 @@ jobs:
       versionType: ${{ github.event.inputs.versionType || 'patch' }}
       branch: developpement # checkout the developpement branch
     secrets:
-      personal_access_token: ${{ secrets.TOKEN }}
+      TOKEN: ${{ secrets.TOKEN }}
     permissions:
       contents: write # for pushing the version bump
       pull-requests: write # for merging the version bump

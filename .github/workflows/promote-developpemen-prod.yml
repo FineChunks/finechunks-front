@@ -1,0 +1,52 @@
+name: promote-developpement-to-prod
+
+on:
+  workflow_dispatch:
+    inputs:
+      versionType:
+        type: choice
+        description: 'Version type to bump'
+        default: 'patch'
+        options:
+          - patch
+          - minor
+          - major
+        required: true
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Bump version
+        id: bump-version
+        uses: ./.github/workflows/bump_version.yml
+        with:
+          versionType: ${{ github.event.inputs.versionType }}
+          branch: developpement # checkout the developpement branch
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # important for git log
+          ref: developpement # checkout the developpement branch
+
+      - name: Create Release
+        run: |
+          git config --global user.name gitHub-actions
+          git config --global user.email "github-actions@github.com"
+          git checkout -b release-${{ steps.bump-version.outputs.version }}
+          git push origin release-${{ steps.bump-version.outputs.version }}
+          git tag -a v${{ steps.bump-version.outputs.version }} -m "Release v${{ steps.bump-version.outputs.version }}"
+          git push origin v${{ steps.bump-version.outputs.version }}
+
+      - name: Merge to production
+        run: |
+          git config --global user.name gitHub-actions
+          git config --global user.email "github-actions@github.com"
+          git config --global pull.ff only
+          git checkout production
+          git pull
+          git merge --no-ff release-${{ github.event.inputs.versionType }}-${{ steps.bump-version.outputs.version }}
+          git push origin production

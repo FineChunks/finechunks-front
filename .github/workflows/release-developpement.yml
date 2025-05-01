@@ -6,6 +6,10 @@ on:
 
   workflow_dispatch: # Allows manual triggering too
 
+permissions:
+  contents: write # for pushing the version bump
+  pull-requests: write # for merging the version bump
+
 jobs:
   bump-version:
     uses: ./.github/workflows/bump_version.yml
@@ -33,11 +37,9 @@ jobs:
           git config --global user.email "github-actions@github.com"
           git config --global pull.ff only
 
-      - name: delete release-developpement branch
+      - name: Merge to release-developpement
         run: |
-          git branch -D release-developpement || true # Ignore error if branch doesn't exist
-
-      - name: Create release-developpement branch
-        run: |
-          git checkout -b release-developpement
+          git checkout release-developpement
+          git pull
+          git merge -s recursive -X theirs developpement
           git push origin release-developpement

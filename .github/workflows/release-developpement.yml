@@ -17,6 +17,7 @@ jobs:
 
   merge:
     runs-on: ubuntu-latest
+    needs: disable-protection
 
     steps:
       - name: Checkout repository
@@ -45,6 +46,7 @@ jobs:
   activate-protection:
     name: Activate Branch Protection
     uses: ./.github/workflows/_enable_protection.yml
+    needs: merge
     with:
       branch: release-developpement
     secrets:

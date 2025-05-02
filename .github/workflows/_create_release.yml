@@ -56,3 +56,12 @@ jobs:
           git tag -a v${{ inputs.version }} -m "Release v${{ inputs.version }}"
           git push origin v${{ inputs.version }}
           echo "branch_name=release-${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+
+  protect_branch:
+    name: Protect Branch
+    uses: ./.github/workflows/_enable_protection.yml
+    needs: create_release
+    with:
+      branch: release-${{ inputs.version }}
+    secrets:
+      TOKEN: ${{ secrets.TOKEN }}

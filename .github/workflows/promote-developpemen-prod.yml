@@ -1,4 +1,4 @@
-name: promote-developpement-to-prod
+name: Promote Developpement to Production
 
 on:
   workflow_dispatch:
@@ -73,3 +73,21 @@ jobs:
         run: |
           git checkout -b production
           git push origin production --force
+
+  enable-dev-protection:
+    name: Enable Branch Protection
+    uses: ./.github/workflows/_enable_protection.yml
+    needs: release-to-production
+    with:
+      branch: developpement
+    secrets:
+      TOKEN: ${{ secrets.TOKEN }}
+
+  enable-prod-protection:
+    name: Enable Release-Developpement Branch Protection
+    uses: ./.github/workflows/_enable_protection.yml
+    needs: release-to-production
+    with:
+      branch: production
+    secrets:
+      TOKEN: ${{ secrets.TOKEN }}

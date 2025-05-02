@@ -11,11 +11,6 @@ on:
       TOKEN:
         required: true
   workflow_dispatch:
-    inputs:
-      branch:
-        type: string
-        description: 'Branch to checkout'
-        required: true
 
 jobs:
   disable_branch_protection:

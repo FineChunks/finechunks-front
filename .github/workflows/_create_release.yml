@@ -46,6 +46,8 @@ jobs:
         run: |
           git checkout -b release-${{ inputs.version }}
           npm version --no-git-tag-version --force --tag-version-prefix='' --ignore-scripts ${{ inputs.version }}
+          git add package.json package-lock.json
+          git commit -m "Bump version to ${{ inputs.version }}"
 
       - name: Push Release
         id: release

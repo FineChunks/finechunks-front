@@ -80,6 +80,30 @@ jobs:
           git checkout -b production
           git push origin production --force
 
+  update-developpement-version:
+    name: Update Developpement Version
+    runs-on: ubuntu-latest
+    needs: release-to-production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # important for git log
+          ref: production # checkout the developpement branch
+
+      - name: Configure Git
+        run: |
+          git config --global user.name gitHub-actions
+          git config --global user.email "github-actions@github.com"
+          git config --global pull.ff only
+
+      - name: Merge Production to Developpement
+        run: |
+          git fetch origin --prune
+          git checkout developpement
+          git rebase production
+          git push origin developpement --force
+
   enable-dev-protection:
     name: Enable Branch Protection
     uses: ./.github/workflows/_enable_protection.yml

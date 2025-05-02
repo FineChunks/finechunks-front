@@ -38,7 +38,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: developpement # checkout the developpement branch
+          ref: ${{ inputs.branch }} # checkout the branch specified in the input
 
       - name: Bump version
         id: get_version

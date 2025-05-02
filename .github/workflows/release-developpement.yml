@@ -1,8 +1,8 @@
 name: Merge Develop to Release-Developpement
 
 on:
-  schedule:
-    - cron: '0 5 * * *' # Every day at 5am UTC (adjust if needed)
+  # schedule:
+  #   - cron: '0 5 * * *' # Every day at 5am UTC (adjust if needed)
 
   workflow_dispatch: # Allows manual triggering too
     inputs:
@@ -61,23 +61,6 @@ jobs:
             --head release-developpement-merge-${{ github.run_id }} \
             --title "Merge developpement into release-developpement" \
             --body "This PR merges the developpement branch into release-developpement." \
-        env:
-          GH_TOKEN: ${{ secrets.TOKEN }} # PAT or inherited token with repo/pull access
-
-      - name: Auto-merge the PR
-        run: |
-          pr_number=$(gh pr list --head version/bump-${{ github.run_id }} --json number -q '.[0].number')
-          gh pr merge "$pr_number" --rebase --delete-branch --admin
-        env:
-          GH_TOKEN: ${{ secrets.TOKEN }}
-
-      - name: Create Pull Request with GitHub CLI
-        run: |
-          gh pr create \
-            --base developpement \
-            --head developpement-merge-${{ github.run_id }} \
-            --title "Merge release-developpement into developpement" \
-            --body "This PR merges the release-developpement branch into developpement." \
         env:
           GH_TOKEN: ${{ secrets.TOKEN }} # PAT or inherited token with repo/pull access
 

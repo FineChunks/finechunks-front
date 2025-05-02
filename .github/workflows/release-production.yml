@@ -1,9 +1,6 @@
-name: Release Developpement
+name: Release Production
 
 on:
-  schedule:
-    - cron: '0 5 * * *' # Every day at 5am UTC (adjust if needed)
-
   workflow_dispatch: # Allows manual triggering too
 
 jobs:
@@ -11,7 +8,7 @@ jobs:
     name: Deactivate Branch Protection
     uses: ./.github/workflows/_disable_protection.yml
     with:
-      branch: release-developpement
+      branch: release-production
     secrets:
       TOKEN: ${{ secrets.TOKEN }}
 
@@ -23,29 +20,29 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # important for git log
-          ref: developpement # checkout the developpement branch
+          ref: production # checkout the production branch
 
       - name: Set up Git identity
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions@github.com"
 
-      - name: Delete release-developpement branch if it exists
+      - name: Delete release-production branch if it exists
         run: |
           git fetch origin --prune
-          if git show-ref --verify --quiet refs/heads/release-developpement; then
-            git push origin --delete release-developpement
+          if git show-ref --verify --quiet refs/heads/release-production; then
+            git push origin --delete release-production
           fi
 
-      - name: Create release-developpement branch
+      - name: Create release-production branch
         run: |
-          git checkout -b release-developpement
-          git push origin release-developpement
+          git checkout -b release-production
+          git push origin release-production
 
   activate-protection:
     name: Activate Branch Protection
     uses: ./.github/workflows/_activate_protection.yml
     with:
-      branch: release-developpement
+      branch: release-production
     secrets:
       TOKEN: ${{ secrets.TOKEN }}

@@ -30,7 +30,6 @@ jobs:
     permissions:
       contents: write # for pushing the version bump
       pull-requests: write # for merging the version bump
-
     outputs:
       version: ${{ steps.get_version.outputs.version }}
 
@@ -39,39 +38,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ inputs.branch }}
-
-      - name: Setup Git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions@github.com"
+          ref: developpement # checkout the developpement branch
 
       - name: Bump version
         id: get_version
         run: |
           version=$(npm version --no-git-tag-version --force --tag-version-prefix='' --ignore-scripts ${{ inputs.versionType }})
           echo "version=$version" >> "$GITHUB_OUTPUT"
-
-      - name: Commit version bump
-        run: |
-          git add package.json package-lock.json
-          git commit -m "chore: bump version"
-
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v7
-        with:
-          commit-message: 'chore: bump version'
-          title: 'chore: bump version'
-          body: |
-            This PR was automatically created by GitHub Actions.
-          branch: version/bump-${{ github.run_id }}
-          delete-branch: true
-          base: ${{ inputs.branch }}
-
-      - name: Auto-merge the PR
-        if: steps.cpr.outputs.pull-request-number != ''
-        run: |
-          gh pr merge ${{ steps.cpr.outputs.pull-request-number }} --squash --delete-branch --admin
-        env:
-          GH_TOKEN: ${{ secrets.TOKEN }}

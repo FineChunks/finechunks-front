@@ -14,39 +14,62 @@ on:
         required: true
 
 jobs:
+  bump-version:
+    name: Bump Version
+    uses: ./.github/workflows/_bump_version.yml
+    with:
+      versionType: ${{ github.event.inputs.versionType || 'patch' }}
+
   create-release:
     name: Create Release
+    uses: ./.github/workflows/_create_release.yml
+    needs: bump-version
+    with:
+      version: ${{ needs.bump-version.outputs.version }}
+
+  disable-dev-protection:
+    name: Disable Branch Protection
+    uses: ./.github/workflows/_disable_protection.yml
+    needs: create-release
+    with:
+      branch: developpement
+    secrets:
+      TOKEN: ${{ secrets.TOKEN }}
+
+  disable-prod-protection:
+    name: Disable Release-Developpement Branch Protection
+    uses: ./.github/workflows/_disable_protection.yml
+    needs: create-release
+    with:
+      branch: production
+    secrets:
+      TOKEN: ${{ secrets.TOKEN }}
+
+  release-to-production:
+    name: Release to Production
     runs-on: ubuntu-latest
-
+    needs: [disable-dev-protection, disable-prod-protection, create-release]
     steps:
-      - name: Bump version
-        id: bump-version
-        uses: ./.github/workflows/bump_version.yml
-        with:
-          versionType: ${{ github.event.inputs.versionType }}
-          branch: developpement # checkout the developpement branch
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # important for git log
-          ref: developpement # checkout the developpement branch
+          ref: release-${{ needs.create-release.outputs.branch_name }} # checkout the release branch
 
-      - name: Create Release
-        run: |
-          git config --global user.name gitHub-actions
-          git config --global user.email "github-actions@github.com"
-          git checkout -b release-${{ steps.bump-version.outputs.version }}
-          git push origin release-${{ steps.bump-version.outputs.version }}
-          git tag -a v${{ steps.bump-version.outputs.version }} -m "Release v${{ steps.bump-version.outputs.version }}"
-          git push origin v${{ steps.bump-version.outputs.version }}
-
-      - name: Merge to production
+      - name: Configure Git
         run: |
           git config --global user.name gitHub-actions
           git config --global user.email "github-actions@github.com"
           git config --global pull.ff only
-          git checkout production
-          git pull
-          git merge --no-ff release-${{ steps.bump-version.outputs.version }}
-          git push origin production
+
+      - name: Delete Production Branch if it exists
+        run: |
+          git fetch origin --prune
+          if git show-ref --verify --quiet refs/heads/production; then
+            git push origin --delete production
+          fi
+
+      - name: Push Release to Production
+        run: |
+          git checkout -b production
+          git push origin production --force

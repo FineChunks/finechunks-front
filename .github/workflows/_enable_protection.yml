@@ -17,6 +17,12 @@ on:
       TOKEN:
         required: true
   workflow_dispatch:
+    inputs:
+      lock:
+        type: boolean
+        description: 'Lock the branch'
+        default: true
+        required: false
 
 jobs:
   enable_branch_protection:

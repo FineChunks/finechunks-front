@@ -107,7 +107,7 @@ jobs:
   enable-dev-protection:
     name: Enable Branch Protection
     uses: ./.github/workflows/_enable_protection.yml
-    needs: release-to-production
+    needs: update-developpement-version
     with:
       branch: developpement
     secrets:
@@ -116,7 +116,7 @@ jobs:
   enable-prod-protection:
     name: Enable Release-Developpement Branch Protection
     uses: ./.github/workflows/_enable_protection.yml
-    needs: release-to-production
+    needs: update-developpement-version
     with:
       branch: production
     secrets:

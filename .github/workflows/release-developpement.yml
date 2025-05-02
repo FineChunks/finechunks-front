@@ -49,5 +49,6 @@ jobs:
     needs: merge
     with:
       branch: release-developpement
+      lock: true
     secrets:
       TOKEN: ${{ secrets.TOKEN }}

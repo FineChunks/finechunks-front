@@ -110,6 +110,7 @@ jobs:
     needs: update-developpement-version
     with:
       branch: developpement
+      lock: false
     secrets:
       TOKEN: ${{ secrets.TOKEN }}
 
@@ -119,5 +120,6 @@ jobs:
     needs: update-developpement-version
     with:
       branch: production
+      lock: true
     secrets:
       TOKEN: ${{ secrets.TOKEN }}

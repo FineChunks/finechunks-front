@@ -63,5 +63,6 @@ jobs:
     needs: create_release
     with:
       branch: release-${{ inputs.version }}
+      lock: true
     secrets:
       TOKEN: ${{ secrets.TOKEN }}

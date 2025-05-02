@@ -44,7 +44,7 @@ jobs:
 
   activate-protection:
     name: Activate Branch Protection
-    uses: ./.github/workflows/_activate_protection.yml
+    uses: ./.github/workflows/_enable_protection.yml
     with:
       branch: release-developpement
     secrets:

@@ -20,6 +20,8 @@ jobs:
     with:
       branch: developpement
       versionType: ${{ github.event.inputs.versionType || 'patch' }}
+    secrets:
+      TOKEN: ${{ secrets.TOKEN }}
 
   create-release:
     name: Create Release
@@ -28,6 +30,8 @@ jobs:
     with:
       branch: developpement
       version: ${{ needs.bump-version.outputs.version }}
+    secrets:
+      TOKEN: ${{ secrets.TOKEN }}
 
   disable-dev-protection:
     name: Disable Branch Protection

@@ -1,6 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { HttpService } from '@services/http.service';
 
 @Component({
   selector: 'app-root',
@@ -8,14 +7,6 @@ import { HttpService } from '@services/http.service';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   title = 'finechunks-front';
-
-  constructor(private httpService: HttpService) {}
-
-  ngOnInit(): void {
-    this.httpService.helloWorld().subscribe(data => {
-      console.log('my hello world', data);
-    });
-  }
 }

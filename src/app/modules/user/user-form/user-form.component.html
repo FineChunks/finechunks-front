@@ -1,0 +1,50 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>{{ isEditMode ? 'Edit User' : 'Create New User' }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+      <mat-form-field appearance="fill">
+        <mat-label>Username</mat-label>
+        <input matInput formControlName="username" required>
+        <mat-error *ngIf="userForm.get('username')?.hasError('required') && userForm.get('username')?.touched">
+          Username is required
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" type="email" required>
+        <mat-error *ngIf="userForm.get('email')?.hasError('required') && userForm.get('email')?.touched">
+          Email is required
+        </mat-error>
+        <mat-error *ngIf="userForm.get('email')?.hasError('email') && userForm.get('email')?.touched">
+          Enter a valid email address
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Password</mat-label>
+        <input matInput [type]="hide ? 'password' : 'text'" formControlName="password" [required]="!isEditMode">
+        <button mat-icon-button matSuffix (click)="hide = !hide" type="button">
+          <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+        </button>
+        <mat-error *ngIf="userForm.get('password')?.hasError('required') && userForm.get('password')?.touched">
+          Password is required
+        </mat-error>
+        <mat-error *ngIf="userForm.get('password')?.hasError('minlength') && userForm.get('password')?.touched">
+          Password must be at least 6 characters long
+        </mat-error>
+      </mat-form-field>
+
+      <div class="form-actions">
+        <button mat-raised-button color="primary" type="submit" [disabled]="userForm.invalid">
+          {{ isEditMode ? 'Update' : 'Create' }}
+        </button>
+        <button mat-button type="button" (click)="onCancel()">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,41 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>User List</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <div *ngIf="isLoading" style="text-align: center;">
+      <mat-spinner></mat-spinner>
+      <p>Loading users...</p>
+    </div>
+
+    <div *ngIf="error" class="error-message">
+      <p>{{ error }}</p>
+    </div>
+
+    <div *ngIf="!isLoading && !error && users.length > 0">
+      <button mat-raised-button color="primary" (click)="createNewUser()">
+        <mat-icon>add</mat-icon> Create New User
+      </button>
+      <mat-list>
+        <mat-list-item *ngFor="let user of users">
+          <h3 matListItemTitle>{{ user.username || user.email }}</h3>
+          <p matListItemLine *ngIf="user.username">{{ user.email }}</p>
+          <p matListItemLine *ngIf="!user.username">No username provided</p>
+          <button mat-icon-button (click)="editUser(user.id!)" matListItemMeta>
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="deleteUser(user.id!)" matListItemMeta>
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-list-item>
+      </mat-list>
+    </div>
+
+    <div *ngIf="!isLoading && !error && users.length === 0" class="no-users-message">
+      <p>No users found.</p>
+      <button mat-raised-button color="primary" (click)="createNewUser()">
+        <mat-icon>add</mat-icon> Create New User
+      </button>
+    </div>
+  </mat-card-content>
+</mat-card>

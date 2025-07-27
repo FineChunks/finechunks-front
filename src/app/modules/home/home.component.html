@@ -3,7 +3,13 @@
     <a href="#">Home</a>
     <a href="#">Servers</a>
     <a href="#">Contact</a>
-    <a href="#" style="float: right">Connexion</a>
+    <a [routerLink]="['/users']" routerLinkActive="router-link-active">Users</a>
+    @if (isConnected) {
+      <a [routerLink]="['/auth/logout']" routerLinkActive="router-link-active" style="float: right">Déconnexion</a>
+    } @else {
+      <a [routerLink]="['/auth/register']" routerLinkActive="router-link-active" style="float: right">Inscription</a>
+    }
+    <a [routerLink]="['/auth/login']" routerLinkActive="router-link-active" style="float: right">Connexion</a>
   </div>
 
   <div class="header">
